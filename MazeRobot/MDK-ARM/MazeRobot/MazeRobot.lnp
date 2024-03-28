@@ -1,0 +1,25 @@
+--cpu Cortex-M0
+"mazerobot\startup_stm32f072xb.o"
+"mazerobot\main.o"
+"mazerobot\stm32f0xx_it.o"
+"mazerobot\stm32f0xx_hal_msp.o"
+"mazerobot\stm32f0xx_hal_tim.o"
+"mazerobot\stm32f0xx_hal_tim_ex.o"
+"mazerobot\stm32f0xx_hal_rcc.o"
+"mazerobot\stm32f0xx_hal_rcc_ex.o"
+"mazerobot\stm32f0xx_hal.o"
+"mazerobot\stm32f0xx_hal_i2c.o"
+"mazerobot\stm32f0xx_hal_i2c_ex.o"
+"mazerobot\stm32f0xx_hal_gpio.o"
+"mazerobot\stm32f0xx_hal_dma.o"
+"mazerobot\stm32f0xx_hal_cortex.o"
+"mazerobot\stm32f0xx_hal_pwr.o"
+"mazerobot\stm32f0xx_hal_pwr_ex.o"
+"mazerobot\stm32f0xx_hal_flash.o"
+"mazerobot\stm32f0xx_hal_flash_ex.o"
+"mazerobot\stm32f0xx_hal_exti.o"
+"mazerobot\system_stm32f0xx.o"
+--strict --scatter "MazeRobot\MazeRobot.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "MazeRobot.map" -o MazeRobot\MazeRobot.axf
