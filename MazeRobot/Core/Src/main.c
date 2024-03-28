@@ -89,9 +89,9 @@ int main(void)
 	// Enable output compare preload
 	TIM3->CCMR1 |= (0x1 << 3);
 	
-	// Set prescaler to 8 and auto-reload to 1000
+	// Set prescaler to 8 and auto-reload to 10000
 	TIM3->PSC = 7;
-	TIM3->ARR = 1000;
+	TIM3->ARR = 10000;
 	
 	// Set channel 1 to PWM mode 1
 	TIM3->CCMR1 |= (0x6 << 4);
