@@ -51,7 +51,12 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void TIM2_IRQn_Handler(void) {
+	GPIOC->ODR |= (0xF << 6);
+	
+	// Clear interrupt
+	TIM2->SR &= ~(0x1);
+}
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/

@@ -64,7 +64,64 @@ int main(void)
 {
 	SystemClock_Config(); //Configure the system clock
 	
-
+	// PB4 = trigger, PA1 = echo
+	
+	// Initialize GPIO and Timer 2 and Timer 3
+	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN | RCC_APB1ENR_TIM3EN;
+	RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOBEN | RCC_AHBENR_GPIOCEN;
+	
+	GPIOC->MODER = 0x55000;
+	
+	GPIOC->ODR = 0x1 << 6;
+	
+	// Enable interrupt
+	NVIC_EnableIRQ(TIM2_IRQn);
+	
+	// Configure alternate function of PA1
+	GPIOA->MODER = 0x8;	// PA1 = AF
+	GPIOA->AFR[0] = 0x20;	//AF 2
+	
+	// Configure alternate function of PB4
+	GPIOB->MODER = 0x200;	// PB4 = AF
+	GPIOB->AFR[0] = 0x10000;	//AF 2
+	
+	// TIMER SETUP for PWM on trigger	////////////////////////////////////
+	// Enable output compare preload
+	TIM3->CCMR1 |= (0x1 << 3);
+	
+	// Set prescaler to 8 and auto-reload to 1000
+	TIM3->PSC = 7;
+	TIM3->ARR = 1000;
+	
+	// Set channel 1 to PWM mode 1
+	TIM3->CCMR1 |= (0x6 << 4);
+	
+	// Enable CC
+	TIM3->CCER |= 0x1;
+	
+	// Set duty cycle to 0.1%
+	TIM3->CCR1 = 1;
+	
+	// Enable timer 3
+	TIM3->CR1 |= 0x1;
+	
+	
+	// Set up Tim 2 for input capture
+	/* (1) Select the active input TI1 for TIMx_CCR1 (CC1S = 01),
+	 select the active input TI1 for TIMx_CCR2 (CC2S = 10) */
+	/* (2) Select TI1FP1 as valid trigger input (TS = 101)
+	 configure the slave mode in reset mode (SMS = 100) */
+	/* (3) Enable capture by setting CC1E and CC2E
+	 select the rising edge on CC1 and CC1N (CC1P = 0 and CC1NP = 0, reset
+	 value),
+	 select the falling edge on CC2 (CC2P = 1). */
+	/* (4) Enable interrupt on Capture/Compare 1 */
+	/* (5) Enable counter */
+	TIM2->CCMR1 |= TIM_CCMR1_CC2S_0 | TIM_CCMR1_CC2S_1; /* (1)*/
+	TIM2->SMCR |= TIM_SMCR_TS_2 | TIM_SMCR_TS_0 | TIM_SMCR_SMS_2; /* (2) */
+	TIM2->CCER |= TIM_CCER_CC2E | TIM_CCER_CC2E | TIM_CCER_CC2P; /* (3) */
+	TIM2->DIER |= TIM_DIER_CC2IE; /* (4) */
+	TIM2->CR1 |= TIM_CR1_CEN; /* (5) */
 }
 
 /**
