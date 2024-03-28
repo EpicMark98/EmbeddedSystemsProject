@@ -100,7 +100,7 @@ int main(void)
 	TIM3->CCER |= 0x1;
 	
 	// Set duty cycle to 0.1%
-	TIM3->CCR1 = 1;
+	TIM3->CCR1 = 10;
 	
 	// Enable timer 3
 	TIM3->CR1 |= 0x1;
@@ -122,6 +122,10 @@ int main(void)
 	TIM2->CCER |= TIM_CCER_CC2E | TIM_CCER_CC2E | TIM_CCER_CC2P; /* (3) */
 	TIM2->DIER |= TIM_DIER_CC2IE; /* (4) */
 	TIM2->CR1 |= TIM_CR1_CEN; /* (5) */
+	
+	while(1) {
+		
+	}
 }
 
 /**
