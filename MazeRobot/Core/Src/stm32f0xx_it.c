@@ -55,7 +55,7 @@ void TIM2_IRQn_Handler(void) {
 	GPIOC->ODR |= (0xF << 6);
 	
 	// Clear interrupt
-	TIM2->SR &= ~(0x1);
+	TIM2->SR &= ~(0x4);
 }
 /* USER CODE END 0 */
 
