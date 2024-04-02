@@ -42,7 +42,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+extern volatile uint16_t rawDistanceValue;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -54,6 +54,58 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+// Transmits one character over the USART interface
+void TransmitChar(char c) {
+	while(!(USART3->ISR & 0x80));	// wait until TXE (bit 7 of ISR) is 1
+	USART3->TDR = c;	// write the character to the USART
+}
+
+// Transmits a string
+void TransmitString(char s[]) {
+	int i = 0;
+	while(s[i]) {		// Loop until a null character is reached
+		TransmitChar(s[i++]);
+	}
+}
+
+// Transmits a number
+void TransmitNumber(int32_t n) {
+	// Max integer is 10 digits (plus sign maybe) so create buffer of length 12
+	char buffer[12];
+	
+	// Calculate sign
+	uint8_t sign = (n < 0);
+	if (sign) {
+		n = -n;
+	}
+	
+	// Convert to chars
+	uint8_t i = 0;
+	while(n > 9) {
+		buffer[i++] = (n % 10) + 48;	// Convert digit to char
+		n /= 10;	// Shift to next digit
+	}
+	buffer[i++] = (n % 10) + 48;	// Convert last digit to char
+	
+	if(sign) {
+		buffer[i++] = '-';
+	}
+	uint8_t numDigits = i;
+	
+	// Flip the characters since we wrote them backwards
+	for(i = 0; i < (numDigits + 1) / 2; ++i) {
+		char temp = buffer[i];
+		buffer[i] = buffer[numDigits - i - 1];
+		buffer[numDigits - i - 1] = temp;
+	}
+	
+	// Add null terminator
+	buffer[numDigits] = 0;
+	
+	// Print to screen
+	TransmitString(buffer);
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -64,23 +116,22 @@ int main(void)
 {
 	SystemClock_Config(); //Configure the system clock
 	
-	// PB4 = trigger, PA8 = echo
+	// PB4 = trigger, PA8 = echo, PC5 = TX on UART board, PC4 = RX on UART board
 	
 	// Enable GPIO and Timer 2
-	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN | RCC_APB1ENR_USART3EN;
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOBEN | RCC_AHBENR_GPIOCEN;
 	
-	// Configure LEDs
-	GPIOC->MODER = 0x55000;
+	// Configure LEDs and USART
+	GPIOC->MODER = 0x55A00;
+	GPIOC->AFR[0] |= 0x110000;
 	
-	GPIOC->ODR = 0x1 << 6;
+	// Initialize the USART
+	USART3->BRR = 8000000 / 115200;	// Set baud rate
+	USART3->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;	// 8 data bit, 1 start bit, 1 stop bit, no parity, reception and transmission mode
 	
 	// Enable interrupt
 	NVIC_EnableIRQ(TIM2_IRQn);
-	
-	// Configure alternate function of PA1
-	GPIOA->MODER = 0x8;	// PA1 = AF
-	GPIOA->AFR[0] = 0x20;	//AF 2
 	
 	// Configure alternate function of PB4
 	GPIOB->MODER = 0x200;	// PB4 = AF
@@ -95,38 +146,27 @@ int main(void)
 	TIM3->CCR1 = 10;		// Set duty cycle to 0.1%
 	TIM3->CR1 |= 0x1;		// Enable timer 3
 	
-	NVIC_EnableIRQ(TIM1_CC_IRQn); /* (1) */
-  NVIC_SetPriority(TIM1_CC_IRQn,0); /* (2) */
-	
-	/* (1) Enable the peripheral clock of Timer x */
-  /* (2) Enable the peripheral clock of GPIOA */
-  /* (3) Select alternate function mode on GPIOA pin 8 */
-  /* (4) Select AF2 on PA8 in AFRH for TIM1_CH1 */
-	
-	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN; /* (1) */
-  RCC->AHBENR |= RCC_AHBENR_GPIOAEN; /* (2) */  
-  GPIOA->MODER = (GPIOA->MODER & ~(GPIO_MODER_MODER8)) | (GPIO_MODER_MODER8_1); /* (3) */
-  GPIOA->AFR[1] |= 0x02; /* (4) */
+	// GPIO setup for echo input capture	
+	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
+  RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
+  GPIOA->MODER = (GPIOA->MODER & ~(GPIO_MODER_MODER8)) | (GPIO_MODER_MODER8_1);
+  GPIOA->AFR[1] |= 0x02;
   
-  /* (1) Select the active input TI1 for TIMx_CCR1 (CC1S = 01), 
-         select the active input TI1 for TIMx_CCR2 (CC2S = 10) */ 
-  /* (2) Select TI1FP1 as valid trigger input (TS = 101)
-         configure the slave mode in reset mode (SMS = 100) */
-  /* (3) Enable capture by setting CC1E and CC2E 
-         select the rising edge on CC1 and CC1N (CC1P = 0 and CC1NP = 0, reset value),
-         select the falling edge on CC2 (CC2P = 1). */
-  /* (4) Enable interrupt on Capture/Compare 1 */
-  /* (5) Enable counter */  
-  
-  TIM1->CCMR1 |= TIM_CCMR1_CC1S_0 | TIM_CCMR1_CC2S_1; /* (1)*/
-  TIM1->SMCR |= TIM_SMCR_TS_2 | TIM_SMCR_TS_0 \
-              | TIM_SMCR_SMS_2; /* (2) */
-  TIM1->CCER |= TIM_CCER_CC1E | TIM_CCER_CC2E | TIM_CCER_CC2P; /* (3) */  
-  TIM1->DIER |= TIM_DIER_CC1IE; /* (4) */
-  TIM1->CR1 |= TIM_CR1_CEN; /* (5) */
+	// Timer 1 setup for echo input capture
+	NVIC_EnableIRQ(TIM1_CC_IRQn);
+  NVIC_SetPriority(TIM1_CC_IRQn,0);
+  TIM1->CCMR1 |= TIM_CCMR1_CC1S_0 | TIM_CCMR1_CC2S_1;
+  TIM1->SMCR |= TIM_SMCR_TS_2 | TIM_SMCR_TS_0 | TIM_SMCR_SMS_2;
+  TIM1->CCER |= TIM_CCER_CC1E | TIM_CCER_CC2E | TIM_CCER_CC2P;  
+  TIM1->DIER |= TIM_DIER_CC1IE;
+  TIM1->CR1 |= TIM_CR1_CEN;
 	
 	while(1) {
-
+		HAL_Delay(1000);
+		GPIOC->ODR ^= (0x1 << 7);
+		// Print distance to the USART
+		TransmitNumber(rawDistanceValue / 58);
+		TransmitString(" cm\r\n");
 	}
 }
 

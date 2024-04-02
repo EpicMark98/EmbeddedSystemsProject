@@ -41,21 +41,26 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+volatile uint16_t rawDistanceValue;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-
+extern void TransmitChar(char c);
+extern void TransmitString(char s[]);
+extern void TransmitNumber(int32_t n);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void TIM1_CC_IRQHandler(void) {
-
-	
 	// Clear interrupt
-	int16_t value = TIM1->CCMR1;
+	rawDistanceValue = TIM1->CCR2;
+	TIM1->SR &= ~(TIM_SR_CC1OF | TIM_SR_CC1IF); /* Clear the flags */
+	
+	GPIOC->ODR ^= (0x1 << 6);
+	
+	TransmitString("Interrupt");
 }
 /* USER CODE END 0 */
 
