@@ -68,7 +68,7 @@ void TransmitString(char s[]) {
 	}
 }
 
-// Transmits a number
+// Transmits a number on USART
 void TransmitNumber(int32_t n) {
 	// Max integer is 10 digits (plus sign maybe) so create buffer of length 12
 	char buffer[12];
@@ -119,7 +119,7 @@ int main(void)
 	// PB4 = trigger, PA8 = echo, PC5 = TX on UART board, PC4 = RX on UART board
 	
 	// Enable GPIO and Timer 2
-	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN | RCC_APB1ENR_USART3EN;
+	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN | RCC_APB1ENR_USART3EN;
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOBEN | RCC_AHBENR_GPIOCEN;
 	
 	// Configure LEDs and USART
@@ -165,7 +165,7 @@ int main(void)
 		HAL_Delay(1000);
 		GPIOC->ODR ^= (0x1 << 7);
 		// Print distance to the USART
-		TransmitNumber(rawDistanceValue / 58);
+		TransmitNumber(rawDistanceValue / 580);
 		TransmitString(" cm\r\n");
 	}
 }

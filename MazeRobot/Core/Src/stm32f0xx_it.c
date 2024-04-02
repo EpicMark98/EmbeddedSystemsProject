@@ -59,8 +59,6 @@ void TIM1_CC_IRQHandler(void) {
 	TIM1->SR &= ~(TIM_SR_CC1OF | TIM_SR_CC1IF); /* Clear the flags */
 	
 	GPIOC->ODR ^= (0x1 << 6);
-	
-	TransmitString("Interrupt");
 }
 /* USER CODE END 0 */
 
