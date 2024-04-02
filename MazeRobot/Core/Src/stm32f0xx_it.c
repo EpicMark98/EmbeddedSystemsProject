@@ -51,11 +51,11 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void TIM2_IRQn_Handler(void) {
-	GPIOC->ODR |= (0xF << 6);
+void TIM1_CC_IRQHandler(void) {
+
 	
 	// Clear interrupt
-	TIM2->SR &= ~(0x4);
+	int16_t value = TIM1->CCMR1;
 }
 /* USER CODE END 0 */
 

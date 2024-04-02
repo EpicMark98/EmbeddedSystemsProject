@@ -64,10 +64,10 @@ int main(void)
 {
 	SystemClock_Config(); //Configure the system clock
 	
-	// PB4 = trigger, PA1 = echo
+	// PB4 = trigger, PA8 = echo
 	
-	// Enable GPIO and Timer 2 and Timer 3
-	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN | RCC_APB1ENR_TIM3EN;
+	// Enable GPIO and Timer 2
+	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOBEN | RCC_AHBENR_GPIOCEN;
 	
 	// Configure LEDs
@@ -95,15 +95,38 @@ int main(void)
 	TIM3->CCR1 = 10;		// Set duty cycle to 0.1%
 	TIM3->CR1 |= 0x1;		// Enable timer 3
 	
-	// Set up Timer 2 for input capture on echo
-	TIM2->CCMR1 |= TIM_CCMR1_CC2S_0; // Map IC2 to TI2
-	TIM2->SMCR |= TIM_SMCR_TS_2 | TIM_SMCR_TS_1 | TIM_SMCR_SMS_2; // Set slave in reset and set TTS to 110 for TI2
-	TIM2->CCER |= TIM_CCER_CC2E  | TIM_CCER_CC2P; // Enable capture/compare for channel 2 and set polarity to falling edge
-	TIM2->DIER |= TIM_DIER_CC2IE; // Enable the interrupt for Capture/Compare 2
-	TIM2->CR1 |= TIM_CR1_CEN; // Enable the timer
+	NVIC_EnableIRQ(TIM1_CC_IRQn); /* (1) */
+  NVIC_SetPriority(TIM1_CC_IRQn,0); /* (2) */
+	
+	/* (1) Enable the peripheral clock of Timer x */
+  /* (2) Enable the peripheral clock of GPIOA */
+  /* (3) Select alternate function mode on GPIOA pin 8 */
+  /* (4) Select AF2 on PA8 in AFRH for TIM1_CH1 */
+	
+	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN; /* (1) */
+  RCC->AHBENR |= RCC_AHBENR_GPIOAEN; /* (2) */  
+  GPIOA->MODER = (GPIOA->MODER & ~(GPIO_MODER_MODER8)) | (GPIO_MODER_MODER8_1); /* (3) */
+  GPIOA->AFR[1] |= 0x02; /* (4) */
+  
+  /* (1) Select the active input TI1 for TIMx_CCR1 (CC1S = 01), 
+         select the active input TI1 for TIMx_CCR2 (CC2S = 10) */ 
+  /* (2) Select TI1FP1 as valid trigger input (TS = 101)
+         configure the slave mode in reset mode (SMS = 100) */
+  /* (3) Enable capture by setting CC1E and CC2E 
+         select the rising edge on CC1 and CC1N (CC1P = 0 and CC1NP = 0, reset value),
+         select the falling edge on CC2 (CC2P = 1). */
+  /* (4) Enable interrupt on Capture/Compare 1 */
+  /* (5) Enable counter */  
+  
+  TIM1->CCMR1 |= TIM_CCMR1_CC1S_0 | TIM_CCMR1_CC2S_1; /* (1)*/
+  TIM1->SMCR |= TIM_SMCR_TS_2 | TIM_SMCR_TS_0 \
+              | TIM_SMCR_SMS_2; /* (2) */
+  TIM1->CCER |= TIM_CCER_CC1E | TIM_CCER_CC2E | TIM_CCER_CC2P; /* (3) */  
+  TIM1->DIER |= TIM_DIER_CC1IE; /* (4) */
+  TIM1->CR1 |= TIM_CR1_CEN; /* (5) */
 	
 	while(1) {
-		
+
 	}
 }
 
