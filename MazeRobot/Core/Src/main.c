@@ -165,7 +165,7 @@ int main(void)
 		HAL_Delay(1000);
 		GPIOC->ODR ^= (0x1 << 7);
 		// Print distance to the USART
-		TransmitNumber(rawDistanceValue / 580);
+		TransmitNumber(rawDistanceValue / 480);
 		TransmitString(" cm\r\n");
 	}
 }
