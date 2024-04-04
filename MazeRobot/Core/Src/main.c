@@ -18,28 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
+#include "motor.h"
 
 /* USER CODE BEGIN PV */
 extern volatile uint16_t rawDistanceValue;
@@ -116,7 +95,7 @@ int main(void)
 {
 	SystemClock_Config(); //Configure the system clock
 	
-	// PB4 = trigger, PA8 = echo, PC5 = TX on UART board, PC4 = RX on UART board
+	// PB4 = trigger, PA8 = echo, PC5 = TX on UART board, PC4 = RX on UART board, PA4 PA5 PA6 motor 1 control
 	
 	// Enable GPIO and Timer 2
 	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN | RCC_APB1ENR_USART3EN;
@@ -160,6 +139,9 @@ int main(void)
   TIM1->CCER |= TIM_CCER_CC1E | TIM_CCER_CC2E | TIM_CCER_CC2P;  
   TIM1->DIER |= TIM_DIER_CC1IE;
   TIM1->CR1 |= TIM_CR1_CEN;
+	
+	// Initialize both motor drivers
+	motor_init();
 	
 	while(1) {
 		HAL_Delay(1000);
