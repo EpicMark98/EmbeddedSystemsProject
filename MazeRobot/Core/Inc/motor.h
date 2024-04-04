@@ -34,6 +34,13 @@ void pwm_setDutyCycle_left(uint8_t duty);
 // Set the duty cycle of the PWM, accepts (0-100)
 void pwm_setDutyCycle_right(uint8_t duty);
 
+// Turn the motors on to perform one of these actions. Continues this action until told otherwise
+void GoForward();
+void GoBackwards();
+void Stop();
+void TurnLeft();
+void TurnRight();
+
 /* -------------------------------------------------------------------------------------------------------------
  *  Internal-Use Initialization Functions
  * -------------------------------------------------------------------------------------------------------------

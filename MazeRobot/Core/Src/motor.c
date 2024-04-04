@@ -102,11 +102,8 @@ void pwm_setDutyCycle_right(uint8_t duty) {
         // (CCR1 == "pulse" parameter in PWM struct used by peripheral library)
     }
 }
-//1: DIRA - PA5 DIRB - PA6		2: DIRA - PB5 DIRB - PB6
+//Left: DIRA - PA5 DIRB - PA6		Right: DIRA - PB5 DIRB - PB6
 void GoForward() {
-	pwm_setDutyCycle_left(100);
-	pwm_setDutyCycle_right(100);
-	
 	// Set DIRA high
 	GPIOA->ODR |= (1 << 5);
 	GPIOB->ODR |= (1 << 5);
@@ -114,12 +111,12 @@ void GoForward() {
 	// Set DIRB low
 	GPIOA->ODR &= ~(1 << 6);
 	GPIOB->ODR &= ~(1 << 6);
+
+	pwm_setDutyCycle_left(100);
+	pwm_setDutyCycle_right(100);
 }
 
 void GoBackwards() {
-	pwm_setDutyCycle_left(100);
-	pwm_setDutyCycle_right(100);
-	
 	// Set DIRA low
 	GPIOA->ODR &= ~(1 << 5);
 	GPIOB->ODR &= ~(1 << 5);
@@ -127,6 +124,9 @@ void GoBackwards() {
 	// Set DIRB high
 	GPIOA->ODR |= (1 << 6);
 	GPIOB->ODR |= (1 << 6);
+	
+	pwm_setDutyCycle_left(100);
+	pwm_setDutyCycle_right(100);
 }
 
 void Stop() {
@@ -135,9 +135,6 @@ void Stop() {
 }
 
 void TurnLeft() {
-	pwm_setDutyCycle_left(100);
-	pwm_setDutyCycle_right(100);
-	
 	// Left wheel backward
 	GPIOA->ODR &= ~(1 << 5);
 	GPIOA->ODR |= (1 << 6);
@@ -145,12 +142,12 @@ void TurnLeft() {
 	// Right wheel forward
 	GPIOB->ODR |= (1 << 5);
 	GPIOB->ODR &= ~(1 << 6);
+	
+	pwm_setDutyCycle_left(100);
+	pwm_setDutyCycle_right(100);
 }
 
 void TurnRight() {
-	pwm_setDutyCycle_left(100);
-	pwm_setDutyCycle_right(100);
-	
 	// Left wheel forward
 	GPIOA->ODR |= (1 << 5);
 	GPIOA->ODR &= ~(1 << 6);
@@ -158,4 +155,7 @@ void TurnRight() {
 	// Right wheel backward
 	GPIOB->ODR &= ~(1 << 5);
 	GPIOB->ODR |= (1 << 6);
+	
+	pwm_setDutyCycle_left(100);
+	pwm_setDutyCycle_right(100);
 }
