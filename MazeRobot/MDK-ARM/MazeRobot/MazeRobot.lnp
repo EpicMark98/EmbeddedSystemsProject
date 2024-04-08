@@ -3,6 +3,7 @@
 "mazerobot\main.o"
 "mazerobot\stm32f0xx_it.o"
 "mazerobot\stm32f0xx_hal_msp.o"
+"mazerobot\motor.o"
 "mazerobot\stm32f0xx_hal_tim.o"
 "mazerobot\stm32f0xx_hal_tim_ex.o"
 "mazerobot\stm32f0xx_hal_rcc.o"

@@ -95,7 +95,7 @@ int main(void)
 {
 	SystemClock_Config(); //Configure the system clock
 	
-	// PB4 = trigger, PA8 = echo, PC5 = TX on UART board, PC4 = RX on UART board, PA4 PA5 PA6 motor 1 control
+	// PB4 = trigger, PA8 = echo, PC5 = TX on UART board, PC4 = RX on UART board, PA4 PA5 PA6 motor 1 control, PB3 PB5 PB6 motor 1 control
 	
 	// Enable GPIO and Timer 2
 	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN | RCC_APB1ENR_USART3EN;
@@ -144,11 +144,36 @@ int main(void)
 	motor_init();
 	
 	while(1) {
+		GoForward();
 		HAL_Delay(1000);
 		GPIOC->ODR ^= (0x1 << 7);
 		// Print distance to the USART
-		TransmitNumber(rawDistanceValue / 480);
-		TransmitString(" cm\r\n");
+		//TransmitNumber(rawDistanceValue / 480);
+		//TransmitString(" cm\r\n");
+		
+		Stop();
+		HAL_Delay(1000);
+		GPIOC->ODR ^= (0x1 << 7);
+		
+		GoBackwards();
+		HAL_Delay(1000);
+		GPIOC->ODR ^= (0x1 << 7);
+		
+		Stop();
+		HAL_Delay(1000);
+		GPIOC->ODR ^= (0x1 << 7);
+		
+		TurnLeft();
+		HAL_Delay(1000);
+		GPIOC->ODR ^= (0x1 << 7);
+		
+		TurnRight();
+		HAL_Delay(1000);
+		GPIOC->ODR ^= (0x1 << 7);
+		
+		Stop();
+		HAL_Delay(1000);
+		GPIOC->ODR ^= (0x1 << 7);
 	}
 }
 

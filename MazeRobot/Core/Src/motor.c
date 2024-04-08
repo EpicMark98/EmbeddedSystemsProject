@@ -16,8 +16,8 @@ volatile uint8_t Ki = 1;            	// Integral gain
 
 // Sets up the entire motor drive system
 void motor_init(void) {
-    pwm_init1();
-		pwm_init2();
+    pwm_init_left();
+		pwm_init_right();
 }
 
 // Sets up the PWM and direction signals to drive the H-Bridge
@@ -66,7 +66,7 @@ void pwm_setDutyCycle_left(uint8_t duty) {
 // Sets up the PWM and direction signals to drive the H-Bridge
 void pwm_init_right(void) {
     
-    // Set up pin PB3 (enable) for H-bridge PWM output (TIMER 14 CH1)
+    // Set up pin PB3 (enable) for H-bridge PWM output (TIMER 2 CH2)
     GPIOB->MODER |= 0x80;
 
     // Set PB3 to AF2,
@@ -90,7 +90,7 @@ void pwm_init_right(void) {
     TIM2->CCER |= TIM_CCER_CC2E;           // Enable capture-compare channel 2
     TIM2->PSC = 1;                         // Run timer on 24Mhz
     TIM2->ARR = 1200;                      // PWM at 20kHz
-    TIM2->CCR1 = 0;                        // Start PWM at 0% duty cycle
+    TIM2->CCR2 = 0;                        // Start PWM at 0% duty cycle
     
     TIM2->CR1 |= TIM_CR1_CEN;              // Enable timer
 }
@@ -98,7 +98,7 @@ void pwm_init_right(void) {
 // Set the duty cycle of the PWM, accepts (0-100)
 void pwm_setDutyCycle_right(uint8_t duty) {
     if(duty <= 100) {
-        TIM2->CCR1 = ((uint32_t)duty*TIM2->ARR)/100;  // Use linear transform to produce CCR1 value
+        TIM2->CCR2 = ((uint32_t)duty*TIM2->ARR)/100;  // Use linear transform to produce CCR1 value
         // (CCR1 == "pulse" parameter in PWM struct used by peripheral library)
     }
 }
@@ -112,8 +112,8 @@ void GoForward() {
 	GPIOA->ODR &= ~(1 << 6);
 	GPIOB->ODR &= ~(1 << 6);
 
-	pwm_setDutyCycle_left(100);
-	pwm_setDutyCycle_right(100);
+	pwm_setDutyCycle_left(50);
+	pwm_setDutyCycle_right(50);
 }
 
 void GoBackwards() {
@@ -125,8 +125,8 @@ void GoBackwards() {
 	GPIOA->ODR |= (1 << 6);
 	GPIOB->ODR |= (1 << 6);
 	
-	pwm_setDutyCycle_left(100);
-	pwm_setDutyCycle_right(100);
+	pwm_setDutyCycle_left(50);
+	pwm_setDutyCycle_right(50);
 }
 
 void Stop() {
@@ -143,8 +143,8 @@ void TurnLeft() {
 	GPIOB->ODR |= (1 << 5);
 	GPIOB->ODR &= ~(1 << 6);
 	
-	pwm_setDutyCycle_left(100);
-	pwm_setDutyCycle_right(100);
+	pwm_setDutyCycle_left(50);
+	pwm_setDutyCycle_right(50);
 }
 
 void TurnRight() {
@@ -156,6 +156,6 @@ void TurnRight() {
 	GPIOB->ODR &= ~(1 << 5);
 	GPIOB->ODR |= (1 << 6);
 	
-	pwm_setDutyCycle_left(100);
-	pwm_setDutyCycle_right(100);
+	pwm_setDutyCycle_left(50);
+	pwm_setDutyCycle_right(50);
 }
