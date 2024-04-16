@@ -31,13 +31,12 @@ void pwm_init_left(void) {
     GPIOA->AFR[0] &= 0xFFF0FFFF; // clear PA4 bits,
     GPIOA->AFR[0] |= (1 << 18);
 
-    // Set up a PA5 (dir A?), PA6 (dir b?) as GPIO output pins for motor direction control
-    GPIOA->MODER &= 0xFFFFC3FF; // clear PA5, PA6 bits,
-    GPIOA->MODER |= (1 << 10) | (1 << 12);
+    // Set up a PA5 (dir A?), PA9 (dir b?) as GPIO output pins for motor direction control
+    GPIOA->MODER |= (1 << 10) | (1 << 18);
     
     //Initialize one direction pin to high, the other low
     GPIOA->ODR |= (1 << 5);
-    GPIOA->ODR &= ~(1 << 6);
+    GPIOA->ODR &= ~(1 << 9);
 
     // Set up PWM timer
     RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
@@ -102,18 +101,18 @@ void pwm_setDutyCycle_right(uint8_t duty) {
         // (CCR1 == "pulse" parameter in PWM struct used by peripheral library)
     }
 }
-//Left: DIRA - PA5 DIRB - PA6		Right: DIRA - PB5 DIRB - PB6
+//Left: DIRA - PA5 DIRB - PA9		Right: DIRA - PB5 DIRB - PB6
 void GoForward() {
 	// Set DIRA high
 	GPIOA->ODR |= (1 << 5);
 	GPIOB->ODR |= (1 << 5);
 	
 	// Set DIRB low
-	GPIOA->ODR &= ~(1 << 6);
+	GPIOA->ODR &= ~(1 << 9);
 	GPIOB->ODR &= ~(1 << 6);
 
-	pwm_setDutyCycle_left(50);
-	pwm_setDutyCycle_right(50);
+	pwm_setDutyCycle_left(100);
+	pwm_setDutyCycle_right(100);
 }
 
 void GoBackwards() {
@@ -122,11 +121,11 @@ void GoBackwards() {
 	GPIOB->ODR &= ~(1 << 5);
 	
 	// Set DIRB high
-	GPIOA->ODR |= (1 << 6);
+	GPIOA->ODR |= (1 << 9);
 	GPIOB->ODR |= (1 << 6);
 	
-	pwm_setDutyCycle_left(50);
-	pwm_setDutyCycle_right(50);
+	pwm_setDutyCycle_left(100);
+	pwm_setDutyCycle_right(100);
 }
 
 void Stop() {
@@ -137,25 +136,25 @@ void Stop() {
 void TurnLeft() {
 	// Left wheel backward
 	GPIOA->ODR &= ~(1 << 5);
-	GPIOA->ODR |= (1 << 6);
+	GPIOA->ODR |= (1 << 9);
 	
 	// Right wheel forward
 	GPIOB->ODR |= (1 << 5);
 	GPIOB->ODR &= ~(1 << 6);
 	
-	pwm_setDutyCycle_left(50);
-	pwm_setDutyCycle_right(50);
+	pwm_setDutyCycle_left(100);
+	pwm_setDutyCycle_right(100);
 }
 
 void TurnRight() {
 	// Left wheel forward
 	GPIOA->ODR |= (1 << 5);
-	GPIOA->ODR &= ~(1 << 6);
+	GPIOA->ODR &= ~(1 << 9);
 	
 	// Right wheel backward
 	GPIOB->ODR &= ~(1 << 5);
 	GPIOB->ODR |= (1 << 6);
 	
-	pwm_setDutyCycle_left(50);
-	pwm_setDutyCycle_right(50);
+	pwm_setDutyCycle_left(100);
+	pwm_setDutyCycle_right(100);
 }
