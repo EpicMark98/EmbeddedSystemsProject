@@ -143,6 +143,20 @@ int main(void)
 	// Initialize both motor drivers
 	motor_init();
 	
+	// Enable pull down resistor for button
+	GPIOA->PUPDR |= 0x2;
+	
+	uint32_t debouncer = 0;
+	uint8_t buttonState = 0;
+	while (debouncer != 0x7FFFFFFF) {
+		
+		debouncer = (debouncer << 1); // Always shift every loop iteration
+		
+		if (GPIOA->IDR & 0x1) { // If input signal is set/high
+			debouncer |= 0x01; // Set lowest bit of bit-vector
+		}
+	}
+	
 	while(1) {
 		GoForward();
 		HAL_Delay(1000);
@@ -176,13 +190,13 @@ int main(void)
 		//TransmitNumber(rawDistanceValue / 480);
 		//TransmitString(" cm\r\n");
 		
-		GoBackwards();
-		HAL_Delay(1000);
-		GPIOC->ODR ^= (0x1 << 7);
+		//GoBackwards();
+		//HAL_Delay(1000);
+		//GPIOC->ODR ^= (0x1 << 7);
 		
-		Stop();
-		HAL_Delay(1000);
-		GPIOC->ODR ^= (0x1 << 7);
+		//Stop();
+		//HAL_Delay(1000);
+		//GPIOC->ODR ^= (0x1 << 7);
 		
 		// Print distance to the USART
 		/*TransmitNumber(rawDistanceValue / 480);
