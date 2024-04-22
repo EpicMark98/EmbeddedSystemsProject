@@ -26,6 +26,10 @@ extern volatile uint16_t rawDistanceValue;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void TurnRight90(void);
+void TurnLeft90(void);
+void GoForwardOne(void);
+void Transmit(int, char);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -156,121 +160,188 @@ int main(void)
 			debouncer |= 0x01; // Set lowest bit of bit-vector
 		}
 	}
+	HAL_Delay(1500);
 	
-	while(1) {
-		//GoForward();
-		//HAL_Delay(1000);
-		//GPIOC->ODR ^= (0x1 << 7);
+	char originalDirection = 5; //Original Direction of bot
+	char arr[102]; //Value chosen for bit map lenght is assuming no more than 34 cells
+	char solved = 0; //boolean to check if maze is solved
+	
+	int n=0; //Integer to go through array
+	int maxN = 0; //Integer to record maximum length of array
+	
+	while(1){
+		debouncer = 0;
 		
-		// Print distance to the USART
-		//TransmitNumber(rawDistanceValue / 480);
-		//TransmitString(" cm\r\n");
+			if(solved){
+				HAL_Delay(2000);
+				while (debouncer != 0x7FFFFFFF) {
+					debouncer = (debouncer << 1); // Always shift every loop iteration
+					if (GPIOA->IDR & 0x1) { // If input signal is set/high
+							debouncer |= 0x01; // Set lowest bit of bit-vector
+					}
+				}
+				for(n=3; n<=maxN; n+=3){
+					GoForwardOne();
+					if(arr[n] == 0){
+						TurnLeft90();
+					}
+					else if(arr[n+2] == 0){
+						TurnRight90();
+					}
+				}
+				continue;
+			}
+			while(!(GPIOA->IDR & 0x1)){
+			GoForwardOne();
+			if(GPIOA->IDR &0x1) {
+				break;
+			}
+			//0 = open, 1 equals not checked, 2 = wall
+
+			//Mark All Directions as "not checked"
+			arr[n]=1;
+			arr[n+1]=1;
+			arr[n+2]=1;
+
+			//Check Left Wall, follow if open
+			TurnLeft90();
+			if(rawDistanceValue/480 > 15){
+				arr[n] = 0;
+				n+=3;
+				continue;
+			}
+
+			//Close Left wall, check Forward Wall, follow if open
+			arr[n] = 2;
+			TurnRight90();
+			if(rawDistanceValue/480 > 15){
+				arr[n+1] = 0;
+				n+=3;
+				continue;
+			}
+
+			//Close Foward  Wall, check right wall, follow if open
+			arr[n+1] = 2;
+			TurnRight90();
+			if(rawDistanceValue/480 > 15){
+				arr[n+2] = 0;
+				n+=3;
+				continue;
+			}	
 		
-		//Stop();
-		//HAL_Delay(1000);
-		//GPIOC->ODR ^= (0x1 << 7);
+			arr[n+2] = 2;
+			TurnRight90();
+
+			//Begin Backtracking
+			while(arr[n] == 2 && arr[n+1] == 2 && arr[n+2] == 2){
+				originalDirection = 5; //Reset originalDirection
 		
-		//Algorithm Start
-		//Going forward one cell requires about 1.15s
-		GoForward(); //Go forward
-		HAL_Delay(1150); //For 1.15s
-		Stop(); //Stop to look around
-		HAL_Delay(1000);//Give it time to stop
+				//Reset arr[n through n+2]
+				arr[n]=1;
+				arr[n+1]=1;
+				arr[n+2]=1;
+				n-=3;
+
+				//Go back one cell
+				GoForwardOne();
 		
-		//Turning 90 degrees requires about 425ms
-		TurnLeft(); //Turn Right 90 degrees
-		HAL_Delay(425);
-		Stop();
-		HAL_Delay(1000);//Give it time to stop
-		if(rawDistanceValue/480 > 15){
-			TransmitNumber(rawDistanceValue / 480);
-			TransmitString(" cm\r\n");
-			continue;
+				//Check for incorrect open path -> close it
+				if(arr[n] == 0){
+					arr[n] = 2;
+					//Transmit(n, 2);
+					originalDirection = 0;
+				}
+				else if(arr[n+1] == 0){
+					arr[n+1] = 2;
+					//Transmit(n+1, 2);
+					originalDirection = 1;
+				}
+				else if(arr[n+2] == 0){
+					arr[n+2] = 2;
+					//Transmit(n+2, 2);
+					originalDirection = 2;
+				}
+
+				//Check (original) straight or right directions, go there OR iterate through backtrack loop again
+				if(arr[n+1] == 1){
+					TurnLeft90();
+					if(rawDistanceValue/480 < 15){
+						arr[n+1] = 2;
+						//Transmit(n+1, 2);
+					}
+					else{
+						arr[n+1] = 0;
+						//Transmit(n+1, 0);
+						break;
+					}
+				}
+				if(arr[n+2] == 1){
+					if(originalDirection == 0){
+						TurnRight90();
+					}
+					else{
+						TurnLeft90();
+					}
+					if(rawDistanceValue/480 < 15){
+						arr[n+2] = 2;
+						//Transmit(n+2, 2);
+					}
+					else{	
+						arr[n+2] = 0;
+						//Transmit(n+2, 0);
+						break;
+					}
+				}
+			}
 		}
-		
-		TurnRight(); //Turn Right 90 degrees
-		HAL_Delay(425);
-		Stop();
-		HAL_Delay(1000);//Give it time to stop
-		if(rawDistanceValue/480 > 15){
-			TransmitNumber(rawDistanceValue / 480);
-			TransmitString(" cm\r\n");
-			continue;
-		}
-		
-		TurnRight(); //Turn Right 90 degrees
-		HAL_Delay(425);
-		Stop();
-		HAL_Delay(1000);//Give it time to stop
-		if(rawDistanceValue/480 > 15){
-			TransmitNumber(rawDistanceValue / 480);
-			TransmitString(" cm\r\n");
-			continue;
-		}
-		
-		TurnRight(); //Begin Backtracking
-		HAL_Delay(425);
-		Stop();
-		HAL_Delay(1000);
-		
-		
-		// Print distance to the USART
-		//TransmitNumber(rawDistanceValue / 480);
-		//TransmitString(" cm\r\n");
-		
-		//TurnLeft();
-		//HAL_Delay(1000);
-		//GPIOC->ODR ^= (0x1 << 7);
-		
-		// Print distance to the USART
-		//TransmitNumber(rawDistanceValue / 480);
-		//TransmitString(" cm\r\n");
-		
-		//Stop();
-		//HAL_Delay(1000);
-		//GPIOC->ODR ^= (0x1 << 7);
-		
-		// Print distance to the USART
-		//TransmitNumber(rawDistanceValue / 480);
-		//TransmitString(" cm\r\n");
-		
-		//GoBackwards();
-		//HAL_Delay(1000);
-		//GPIOC->ODR ^= (0x1 << 7);
-		
-		//Stop();
-		//HAL_Delay(1000);
-		//GPIOC->ODR ^= (0x1 << 7);
-		
-		// Print distance to the USART
-		/*TransmitNumber(rawDistanceValue / 480);
-		TransmitString(" cm\r\n");
-		
-		Stop();
-		HAL_Delay(1000);
-		GPIOC->ODR ^= (0x1 << 7);
-		
-		// Print distance to the USART
-		TransmitNumber(rawDistanceValue / 480);
-		TransmitString(" cm\r\n");
-		
-		TurnRight();
-		HAL_Delay(1000);
-		GPIOC->ODR ^= (0x1 << 7);
-		
-		// Print distance to the USART
-		TransmitNumber(rawDistanceValue / 480);
-		TransmitString(" cm\r\n");
-		
-		Stop();
-		HAL_Delay(1000);
-		GPIOC->ODR ^= (0x1 << 7);
-		
-		// Print distance to the USART
-		TransmitNumber(rawDistanceValue / 480);
-		TransmitString(" cm\r\n");*/
+		maxN=n+3;
+		solved = 1;
 	}
 }
+
+/**
+	* @brief Transmits index and value to UART
+	*	@retval None
+	*/
+void Transmit(int n, char c){
+	TransmitNumber(n);
+	TransmitString(" : ");
+	TransmitNumber(c);
+}
+
+/**
+	* @brief Turns the bot left 90 degrees
+	*	@retval None
+	*/
+void TurnLeft90(void){
+	TurnLeft();
+	HAL_Delay(425);
+	Stop();
+	HAL_Delay(1000);
+}
+
+/**
+	* @brief Turns the bot right 90 degrees
+	*	@retval None
+	*/
+void TurnRight90(void){
+	TurnRight();
+	HAL_Delay(425);
+	Stop();
+	HAL_Delay(1000);
+}
+
+/**
+	* @brief Moves the bot Forward one cell
+	*	@retval None
+	*/
+void GoForwardOne(void){
+	GoForward();
+	HAL_Delay(1100);
+	Stop();
+	HAL_Delay(1000);
+}
+
 
 /**
   * @brief System Clock Configuration
