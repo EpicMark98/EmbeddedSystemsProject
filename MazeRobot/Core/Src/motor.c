@@ -111,8 +111,8 @@ void GoForward() {
 	GPIOA->ODR &= ~(1 << 9);
 	GPIOB->ODR &= ~(1 << 6);
 
-	pwm_setDutyCycle_left(100);
-	pwm_setDutyCycle_right(100);
+	pwm_setDutyCycle_left(92);
+	pwm_setDutyCycle_right(90);
 }
 
 void GoBackwards() {
@@ -124,8 +124,8 @@ void GoBackwards() {
 	GPIOA->ODR |= (1 << 9);
 	GPIOB->ODR |= (1 << 6);
 	
-	pwm_setDutyCycle_left(100);
-	pwm_setDutyCycle_right(100);
+	pwm_setDutyCycle_left(90);
+	pwm_setDutyCycle_right(90);
 }
 
 void Stop() {
@@ -142,8 +142,8 @@ void TurnLeft() {
 	GPIOB->ODR |= (1 << 5);
 	GPIOB->ODR &= ~(1 << 6);
 	
-	pwm_setDutyCycle_left(100);
-	pwm_setDutyCycle_right(100);
+	pwm_setDutyCycle_left(90);
+	pwm_setDutyCycle_right(90);
 }
 
 void TurnRight() {
@@ -155,6 +155,6 @@ void TurnRight() {
 	GPIOB->ODR &= ~(1 << 5);
 	GPIOB->ODR |= (1 << 6);
 	
-	pwm_setDutyCycle_left(100);
-	pwm_setDutyCycle_right(100);
+	pwm_setDutyCycle_left(90);
+	pwm_setDutyCycle_right(90);
 }

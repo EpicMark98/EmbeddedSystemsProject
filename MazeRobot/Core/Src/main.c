@@ -158,17 +158,61 @@ int main(void)
 	}
 	
 	while(1) {
-		GoForward();
-		HAL_Delay(1000);
-		GPIOC->ODR ^= (0x1 << 7);
+		//GoForward();
+		//HAL_Delay(1000);
+		//GPIOC->ODR ^= (0x1 << 7);
 		
 		// Print distance to the USART
 		//TransmitNumber(rawDistanceValue / 480);
 		//TransmitString(" cm\r\n");
 		
+		//Stop();
+		//HAL_Delay(1000);
+		//GPIOC->ODR ^= (0x1 << 7);
+		
+		//Algorithm Start
+		//Going forward one cell requires about 1.15s
+		GoForward(); //Go forward
+		HAL_Delay(1150); //For 1.15s
+		Stop(); //Stop to look around
+		HAL_Delay(1000);//Give it time to stop
+		
+		//Turning 90 degrees requires about 425ms
+		TurnLeft(); //Turn Right 90 degrees
+		HAL_Delay(425);
+		Stop();
+		HAL_Delay(1000);//Give it time to stop
+		if(rawDistanceValue/480 > 15){
+			TransmitNumber(rawDistanceValue / 480);
+			TransmitString(" cm\r\n");
+			continue;
+		}
+		
+		TurnRight(); //Turn Right 90 degrees
+		HAL_Delay(425);
+		Stop();
+		HAL_Delay(1000);//Give it time to stop
+		if(rawDistanceValue/480 > 15){
+			TransmitNumber(rawDistanceValue / 480);
+			TransmitString(" cm\r\n");
+			continue;
+		}
+		
+		TurnRight(); //Turn Right 90 degrees
+		HAL_Delay(425);
+		Stop();
+		HAL_Delay(1000);//Give it time to stop
+		if(rawDistanceValue/480 > 15){
+			TransmitNumber(rawDistanceValue / 480);
+			TransmitString(" cm\r\n");
+			continue;
+		}
+		
+		TurnRight(); //Begin Backtracking
+		HAL_Delay(425);
 		Stop();
 		HAL_Delay(1000);
-		GPIOC->ODR ^= (0x1 << 7);
+		
 		
 		// Print distance to the USART
 		//TransmitNumber(rawDistanceValue / 480);
