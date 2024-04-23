@@ -180,7 +180,7 @@ int main(void)
 							debouncer |= 0x01; // Set lowest bit of bit-vector
 					}
 				}
-				for(n=3; n<=maxN; n+=3){
+				for(n=0; n<=maxN; n+=3){
 					GoForwardOne();
 					if(arr[n] == 0){
 						TurnLeft90();
@@ -191,6 +191,8 @@ int main(void)
 				}
 				continue;
 			}
+			
+			// Main solve loop
 			while(!(GPIOA->IDR & 0x1)){
 			GoForwardOne();
 			if(GPIOA->IDR &0x1) {
@@ -293,8 +295,11 @@ int main(void)
 					}
 				}
 			}
+			
+			// Move to next cell now that backtracking is done
+			n+=3;
 		}
-		maxN=n+3;
+		maxN=n;
 		solved = 1;
 	}
 }
