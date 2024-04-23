@@ -189,6 +189,7 @@ int main(void)
 						TurnRight90();
 					}
 				}
+				GoForwardOne();	//Exit the maze
 				continue;
 			}
 			
