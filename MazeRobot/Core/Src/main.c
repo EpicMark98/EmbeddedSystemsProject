@@ -163,7 +163,7 @@ int main(void)
 	HAL_Delay(1500);
 	
 	char originalDirection = 5; //Original Direction of bot
-	char arr[102]; //Value chosen for bit map lenght is assuming no more than 34 cells
+	char arr[102]; //Value chosen for bit map length is assuming no more than 34 cells
 	char solved = 0; //boolean to check if maze is solved
 	
 	int n=0; //Integer to go through array
@@ -189,114 +189,105 @@ int main(void)
 						TurnRight90();
 					}
 				}
-				GoForwardOne();	//Exit the maze
 				continue;
 			}
 			
 			// Main solve loop
 			while(!(GPIOA->IDR & 0x1)){
-			GoForwardOne();
-			if(GPIOA->IDR &0x1) {
-				break;
-			}
-			//0 = open, 1 equals not checked, 2 = wall
+				GoForwardOne();
+				if(GPIOA->IDR &0x1) {
+					break;
+				}
+				//0 = open, 1 equals not checked, 2 = wall
 
-			//Mark All Directions as "not checked"
-			arr[n]=1;
-			arr[n+1]=1;
-			arr[n+2]=1;
-
-			//Check Left Wall, follow if open
-			TurnLeft90();
-			if(rawDistanceValue/480 > 15){
-				arr[n] = 0;
-				n+=3;
-				continue;
-			}
-
-			//Close Left wall, check Forward Wall, follow if open
-			arr[n] = 2;
-			TurnRight90();
-			if(rawDistanceValue/480 > 15){
-				arr[n+1] = 0;
-				n+=3;
-				continue;
-			}
-
-			//Close Foward  Wall, check right wall, follow if open
-			arr[n+1] = 2;
-			TurnRight90();
-			if(rawDistanceValue/480 > 15){
-				arr[n+2] = 0;
-				n+=3;
-				continue;
-			}	
-		
-			arr[n+2] = 2;
-			TurnRight90();
-
-			//Begin Backtracking
-			while(arr[n] == 2 && arr[n+1] == 2 && arr[n+2] == 2){
-				originalDirection = 5; //Reset originalDirection
-		
-				//Reset arr[n through n+2]
+				//Mark All Directions as "not checked"
 				arr[n]=1;
 				arr[n+1]=1;
 				arr[n+2]=1;
-				n-=3;
 
-				//Go back one cell
-				GoForwardOne();
-		
-				//Check for incorrect open path -> close it
-				if(arr[n] == 0){
-					arr[n] = 2;
-					//Transmit(n, 2);
-					originalDirection = 0;
-				}
-				else if(arr[n+1] == 0){
-					arr[n+1] = 2;
-					//Transmit(n+1, 2);
-					originalDirection = 1;
-				}
-				else if(arr[n+2] == 0){
-					arr[n+2] = 2;
-					//Transmit(n+2, 2);
-					originalDirection = 2;
+				//Check Left Wall, follow if open
+				TurnLeft90();
+				if(rawDistanceValue/480 > 15){
+					arr[n] = 0;
+					n+=3;
+					continue;
 				}
 
-				//Check (original) straight or right directions, go there OR iterate through backtrack loop again
-				if(arr[n+1] == 1){
-					TurnLeft90();
-					if(rawDistanceValue/480 < 15){
-						arr[n+1] = 2;
-						//Transmit(n+1, 2);
-					}
-					else{
-						arr[n+1] = 0;
-						//Transmit(n+1, 0);
-						break;
-					}
+				//Close Left wall, check Forward Wall, follow if open
+				arr[n] = 2;
+				TurnRight90();
+				if(rawDistanceValue/480 > 15){
+					arr[n+1] = 0;
+					n+=3;
+					continue;
 				}
-				if(arr[n+2] == 1){
-					if(originalDirection == 0){
-						TurnRight90();
-					}
-					else{
-						TurnLeft90();
-					}
-					if(rawDistanceValue/480 < 15){
-						arr[n+2] = 2;
-						//Transmit(n+2, 2);
-					}
-					else{	
-						arr[n+2] = 0;
-						//Transmit(n+2, 0);
-						break;
-					}
-				}
-			}
+
+				//Close Foward  Wall, check right wall, follow if open
+				arr[n+1] = 2;
+				TurnRight90();
+				if(rawDistanceValue/480 > 15){
+					arr[n+2] = 0;
+					n+=3;
+					continue;
+				}	
 			
+				arr[n+2] = 2;
+				TurnRight90();
+
+				//Begin Backtracking
+				while(arr[n] == 2 && arr[n+1] == 2 && arr[n+2] == 2){
+					originalDirection = 5; //Reset originalDirection
+			
+					//Reset arr[n through n+2]
+					arr[n]=1;
+					arr[n+1]=1;
+					arr[n+2]=1;
+					n-=3;
+
+					//Go back one cell
+					GoForwardOne();
+			
+					//Check for incorrect open path -> close it
+					if(arr[n] == 0){
+						arr[n] = 2;
+						originalDirection = 0;
+					}
+					else if(arr[n+1] == 0){
+						arr[n+1] = 2;
+						originalDirection = 1;
+					}
+					else if(arr[n+2] == 0){
+						arr[n+2] = 2;
+						originalDirection = 2;
+					}
+
+					//Check (original) straight or right directions, go there OR iterate through backtrack loop again
+					if(arr[n+1] == 1){
+						TurnLeft90();
+						if(rawDistanceValue/480 < 15){
+							arr[n+1] = 2;
+						}
+						else{
+							arr[n+1] = 0;
+							break;
+						}
+					}
+					if(arr[n+2] == 1){
+						if(originalDirection == 0){
+							TurnRight90();
+						}
+						else{
+							TurnLeft90();
+						}
+						if(rawDistanceValue/480 < 15){
+							arr[n+2] = 2;
+						}
+						else{	
+							arr[n+2] = 0;
+							break;
+						}
+					}
+			}			
 			// Move to next cell now that backtracking is done
 			n+=3;
 		}
@@ -306,22 +297,12 @@ int main(void)
 }
 
 /**
-	* @brief Transmits index and value to UART
-	*	@retval None
-	*/
-void Transmit(int n, char c){
-	TransmitNumber(n);
-	TransmitString(" : ");
-	TransmitNumber(c);
-}
-
-/**
 	* @brief Turns the bot left 90 degrees
 	*	@retval None
 	*/
 void TurnLeft90(void){
 	TurnLeft();
-	HAL_Delay(425);
+	HAL_Delay(460);
 	Stop();
 	HAL_Delay(1000);
 }
@@ -332,7 +313,7 @@ void TurnLeft90(void){
 	*/
 void TurnRight90(void){
 	TurnRight();
-	HAL_Delay(425);
+	HAL_Delay(460);
 	Stop();
 	HAL_Delay(1000);
 }
@@ -343,7 +324,7 @@ void TurnRight90(void){
 	*/
 void GoForwardOne(void){
 	GoForward();
-	HAL_Delay(1100);
+	HAL_Delay(1130);
 	Stop();
 	HAL_Delay(1000);
 }
